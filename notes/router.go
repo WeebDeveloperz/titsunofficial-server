@@ -15,25 +15,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package main
+package notes
 
 import (
-	_ "github.com/joho/godotenv/autoload"
-  "github.com/WeebDeveloperz/titsunofficial-server/database"
-  n "github.com/WeebDeveloperz/titsunofficial-server/notes"
   "github.com/gin-gonic/gin"
   "net/http"
 )
 
-func main() {
-  defer database.DisconnectDB()
-  r := gin.New()
+func Routes(route *gin.Engine) {
+	nd := route.Group("/notes")
+	{
+		nd.GET("/list", func (ctx *gin.Context) {
+	    //// TODO: add functionality to filter results
+	    //clients, err := getClients(nil)
+	    //if err != nil {
+	    //	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	    //	log.Printf("ERROR: Failed to read documents: %v\n", err.Error())
+	    //	return
+	    //}
 
-	n.Routes(r)
-
-  r.GET("/ping", func(ctx *gin.Context) {
-    ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
-  })
-
-  r.Run(":6969")
+	    ctx.JSON(http.StatusOK, dirToJSON("data"))
+		})
+	}
 }

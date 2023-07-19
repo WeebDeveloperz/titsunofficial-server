@@ -1,5 +1,5 @@
 /* titsunofficial-server - Server for unofficial TIT&S website (github.com/WeebDeveloperz/titsunofficial)
- * Copyright (C) 2022  titsunofficial-server contributors
+ * Copyright (C) 2023  titsunofficial-server contributors
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
