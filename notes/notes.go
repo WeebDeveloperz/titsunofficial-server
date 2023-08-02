@@ -18,55 +18,29 @@
 package notes
 
 import (
-  "os"
-	"time"
-	"io/ioutil"
-	"path/filepath"
+	"gorm.io/gorm"
+	"github.com/WeebDeveloperz/titsunofficial-server/database"
 )
 
+var db *gorm.DB
+func Init() {
+	db = database.DB
+	db.AutoMigrate(&Subject{})
+}
+
+type Subject struct {
+	gorm.Model
+
+	Semester    int    `json:"sem"`
+	Branch      string `json:"branch"`
+	SubjectCode string `json:"code"`
+	SubjectName string `json:"name"`
+}
+
 type File struct {
-  ModifiedTime time.Time `json:"ModifiedTime"`
-  IsLink       bool      `json:"IsLink"`
-  IsDir        bool      `json:"IsDir"`
-  LinksTo      string    `json:"LinksTo"`
-  Size         int64     `json:"Size"`
-  Name         string    `json:"Name"`
-  Path         string    `json:"Path"`
-  Children     []*File   `json:"Children"`
-}
+	gorm.Model
 
-func dirToJSON(path string) File {
-  rootOSFile, _ := os.Stat(path)
-  rootFile := toFile(rootOSFile, path)
-  stack := []*File{rootFile}
-
-  for len(stack) > 0 {
-    file := stack[len(stack)-1]
-    stack = stack[:len(stack)-1]
-    children, _ := ioutil.ReadDir(file.Path)
-    for _, child := range children {
-      child := toFile(child, filepath.Join(file.Path, child.Name()))
-      file.Children = append(file.Children, child)
-      stack = append(stack, child)
-    }
-  }
-
-	return *rootFile
-}
-
-func toFile(file os.FileInfo, path string) *File {
-  JSONFile := File{ModifiedTime: file.ModTime(),
-    IsDir:    file.IsDir(),
-    Size:     file.Size(),
-    Name:     file.Name(),
-    Path:     path,
-    Children: []*File{},
-  }
-
-  if file.Mode()&os.ModeSymlink == os.ModeSymlink {
-    JSONFile.IsLink = true
-    JSONFile.LinksTo, _ = filepath.EvalSymlinks(filepath.Join(path, file.Name()))
-  }
-
-  return &JSONFile
+	SubjectId uint   `json:"subject"`
+	FileName  string `json:"name"`
+	FilePath  string `json:"path"`
 }

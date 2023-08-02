@@ -18,40 +18,20 @@
 package database
 
 import (
-  "context"
-  "log"
-  "time"
-
-  "go.mongodb.org/mongo-driver/mongo"
-  "go.mongodb.org/mongo-driver/mongo/options"
+	"gorm.io/gorm"
+  "gorm.io/driver/mysql"
+	"os"
+	"log"
 )
 
-var DB *mongo.Database
-var client *mongo.Client
+var DB *gorm.DB
 
-func init() {
-  ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-  defer cancel()
+func ConnectToDB() {
+	var err error
+	DB, err = gorm.Open(mysql.Open(os.Getenv("dsn")), &gorm.Config{})
 
-  var err error
-  client, err = mongo.Connect(ctx, options.Client().ApplyURI("mongodb://127.0.0.1:27017"))
-  if err != nil {
-    log.Fatal(err)
-  }
-
-  log.Println("Successfully connected to MongoDB database.")
-  DB = client.Database("titsdb")
-}
-
-func DisconnectDB() {
-  if client == nil {
-    return
-  }
-
-  err := client.Disconnect(context.TODO())
-  if err != nil {
-    log.Fatal(err)
-  }
-
-  log.Println("Successfully closed connection with MongoDB.")
+	if err != nil {
+		log.Printf("Error while connecting to database: %v\n", err.Error())
+		os.Exit(1)
+	}
 }

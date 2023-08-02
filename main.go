@@ -19,14 +19,16 @@ package main
 
 import (
 	_ "github.com/joho/godotenv/autoload"
-  "github.com/WeebDeveloperz/titsunofficial-server/database"
+  d "github.com/WeebDeveloperz/titsunofficial-server/database"
   n "github.com/WeebDeveloperz/titsunofficial-server/notes"
   "github.com/gin-gonic/gin"
   "net/http"
 )
 
 func main() {
-  defer database.DisconnectDB()
+	d.ConnectToDB()
+	n.Init() // shitty
+
   r := gin.New()
 
 	n.Routes(r)

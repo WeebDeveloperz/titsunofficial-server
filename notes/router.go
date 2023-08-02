@@ -19,22 +19,80 @@ package notes
 
 import (
   "github.com/gin-gonic/gin"
+	"log"
+	"encoding/json"
   "net/http"
 )
 
 func Routes(route *gin.Engine) {
-	nd := route.Group("/notes")
+	s := route.Group("/subjects")
 	{
-		nd.GET("/list", func (ctx *gin.Context) {
-	    //// TODO: add functionality to filter results
-	    //clients, err := getClients(nil)
-	    //if err != nil {
-	    //	ctx.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-	    //	log.Printf("ERROR: Failed to read documents: %v\n", err.Error())
-	    //	return
-	    //}
+		s.GET("/", func(ctx *gin.Context) {
+			var subjects []Subject
 
-	    ctx.JSON(http.StatusOK, dirToJSON("data"))
+			// TODO: handle error
+			res := db.Find(&subjects)
+			log.Printf("Read all subjects from DB: %v", res)
+
+			ctx.JSON(http.StatusOK, gin.H{"data": subjects})
+		})
+
+		s.POST("/", func(ctx *gin.Context) {
+			var s Subject
+      json.Unmarshal([]byte(ctx.PostForm("data")), &s)
+			log.Println(ctx.PostForm("data"))
+
+			// TODO: handle error
+			res := db.Create(&s)
+			log.Printf("Saved new subject to DB: %v", res)
+
+			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
+		})
+
+		s.PUT("/", func(ctx *gin.Context) {
+			var s Subject
+      json.Unmarshal([]byte(ctx.PostForm("data")), &s)
+
+			// TODO: handle error
+			res := db.Save(&s)
+			log.Printf("Updated subject in DB: %v", res)
+
+			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
+		})
+
+		s.DELETE("/", func(ctx *gin.Context) {
+			var s Subject
+      json.Unmarshal([]byte(ctx.PostForm("data")), &s)
+
+			// TODO: handle error
+			res := db.Delete(&s)
+			log.Printf("Deleted subject from DB: %v", res)
+
+			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
+		})
+	}
+
+	f := route.Group("/files")
+	{
+		f.POST("/", func(ctx *gin.Context) {
+			var f File
+      json.Unmarshal([]byte(ctx.PostForm("data")), &f)
+
+			// TODO: handle error
+			res := db.Create(&f)
+			log.Printf("Saved new file to DB: %v", res)
+
+			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
+		})
+
+		f.GET("/all", func(ctx *gin.Context) {
+			var files []File
+
+			// TODO: handle error
+			res := db.Find(&files)
+			log.Printf("Read all files from DB: %v", res)
+
+			ctx.JSON(http.StatusOK, gin.H{"data": files})
 		})
 	}
 }
