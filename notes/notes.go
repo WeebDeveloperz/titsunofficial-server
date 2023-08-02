@@ -20,12 +20,15 @@ package notes
 import (
 	"gorm.io/gorm"
 	"github.com/WeebDeveloperz/titsunofficial-server/database"
+	"os"
 )
 
+var dataDir string
 var db *gorm.DB
 func Init() {
 	db = database.DB
-	db.AutoMigrate(&Subject{})
+	db.AutoMigrate(&Subject{}, &File{})
+	dataDir = os.Getenv("DATA_DIR")
 }
 
 type Subject struct {
