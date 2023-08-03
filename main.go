@@ -1,5 +1,5 @@
 /* titsunofficial-server - Server for unofficial TIT&S website (github.com/WeebDeveloperz/titsunofficial)
- * Copyright (C) 2022  titsunofficial-server contributors
+ * Copyright (C) 2023  titsunofficial-server contributors
 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,20 @@
 package main
 
 import (
-  "github.com/WeebDeveloperz/titsunofficial-server/database"
+	_ "github.com/joho/godotenv/autoload"
+  d "github.com/WeebDeveloperz/titsunofficial-server/database"
+  n "github.com/WeebDeveloperz/titsunofficial-server/notes"
   "github.com/gin-gonic/gin"
   "net/http"
 )
 
 func main() {
-  defer database.DisconnectDB()
+	d.ConnectToDB()
+	n.Init() // shitty
+
   r := gin.New()
+
+	n.Routes(r)
 
   r.GET("/ping", func(ctx *gin.Context) {
     ctx.JSON(http.StatusOK, gin.H{"message": "pong"})

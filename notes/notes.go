@@ -15,23 +15,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package database
+package notes
 
 import (
 	"gorm.io/gorm"
-  "gorm.io/driver/mysql"
+	"github.com/WeebDeveloperz/titsunofficial-server/database"
 	"os"
-	"log"
 )
 
-var DB *gorm.DB
+var dataDir string
+var db *gorm.DB
+func Init() {
+	db = database.DB
+	db.AutoMigrate(&Subject{}, &File{})
+	dataDir = os.Getenv("DATA_DIR")
+}
 
-func ConnectToDB() {
-	var err error
-	DB, err = gorm.Open(mysql.Open(os.Getenv("dsn")), &gorm.Config{})
+type Subject struct {
+	ID          uint   `json:"id"`
+	Semester    int    `json:"sem"`
+	Branch      string `json:"branch"`
+	SubjectCode string `json:"code"`
+	SubjectName string `json:"name"`
+}
 
-	if err != nil {
-		log.Printf("Error while connecting to database: %v\n", err.Error())
-		os.Exit(1)
-	}
+type File struct {
+	ID        uint    `json:"id"`
+	FileName  string  `json:"name"`
+	FilePath  string  `json:"path"`
+	SubjectID uint    `json:"subject_id"`
+	Subject   Subject `json:"subject"`
 }
