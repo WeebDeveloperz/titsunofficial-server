@@ -32,8 +32,7 @@ func Init() {
 }
 
 type Subject struct {
-	gorm.Model
-
+	ID          uint   `json:"id"`
 	Semester    int    `json:"sem"`
 	Branch      string `json:"branch"`
 	SubjectCode string `json:"code"`
@@ -41,9 +40,9 @@ type Subject struct {
 }
 
 type File struct {
-	gorm.Model
-
-	SubjectId uint   `json:"subject"`
-	FileName  string `json:"name"`
-	FilePath  string `json:"path"`
+	ID        uint    `json:"id"`
+	FileName  string  `json:"name"`
+	FilePath  string  `json:"path"`
+	SubjectID uint    `json:"subject_id"`
+	Subject   Subject `json:"subject"`
 }

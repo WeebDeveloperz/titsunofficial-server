@@ -67,8 +67,26 @@ func Routes(route *gin.Engine) {
       json.Unmarshal([]byte(ctx.PostForm("data")), &s)
 
 			// TODO: handle error
+			var files []File
+			db.Where("subject_id = ?", s.ID).Find(&files)
+
+			db.Delete(files)
+			log.Printf("Deleted all files for subject \"%s\" from DB: %v", s.SubjectCode, files)
+
+			// TODO: handle error
 			res := db.Delete(&s)
 			log.Printf("Deleted subject from DB: %v", res)
+
+			for _, f := range files {
+			  fp := dataDir + f.FilePath
+			  err := os.Remove(fp)
+			  if err != nil {
+			  	// TODO: check what error it is
+			  	log.Printf("Error while deleting files: %v\n", err.Error())
+			    ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
+			  }
+			}
+			log.Printf("Deleted all files for subject \"%s\" from filesystem: %v", s.SubjectCode, files)
 
 			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 		})
