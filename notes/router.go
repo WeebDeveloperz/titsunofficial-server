@@ -24,6 +24,7 @@ import (
 	"encoding/json"
   "net/http"
 	"os"
+	"github.com/WeebDeveloperz/titsunofficial-server/auth"
 )
 
 func Routes(route *gin.Engine) {
@@ -39,7 +40,7 @@ func Routes(route *gin.Engine) {
 			ctx.JSON(http.StatusOK, gin.H{"data": subjects})
 		})
 
-		s.POST("/", func(ctx *gin.Context) {
+		s.POST("/", auth.Authorize(""), func(ctx *gin.Context) {
 			var s Subject
       json.Unmarshal([]byte(ctx.PostForm("data")), &s)
 			log.Println(ctx.PostForm("data"))
@@ -51,7 +52,7 @@ func Routes(route *gin.Engine) {
 			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 		})
 
-		s.PUT("/", func(ctx *gin.Context) {
+		s.PUT("/", auth.Authorize(""), func(ctx *gin.Context) {
 			var s Subject
       json.Unmarshal([]byte(ctx.PostForm("data")), &s)
 
@@ -62,7 +63,7 @@ func Routes(route *gin.Engine) {
 			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 		})
 
-		s.DELETE("/", func(ctx *gin.Context) {
+		s.DELETE("/", auth.Authorize(""), func(ctx *gin.Context) {
 			var s Subject
       json.Unmarshal([]byte(ctx.PostForm("data")), &s)
 
@@ -104,7 +105,7 @@ func Routes(route *gin.Engine) {
 			ctx.JSON(http.StatusOK, gin.H{"data": files})
 		})
 
-		f.POST("/", func(ctx *gin.Context) {
+		f.POST("/", auth.Authorize(""), func(ctx *gin.Context) {
 			var f File
       json.Unmarshal([]byte(ctx.PostForm("data")), &f)
 
@@ -130,7 +131,7 @@ func Routes(route *gin.Engine) {
 			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 		})
 
-		f.DELETE("/", func(ctx *gin.Context) {
+		f.DELETE("/", auth.Authorize(""), func(ctx *gin.Context) {
 			var f File
       json.Unmarshal([]byte(ctx.PostForm("data")), &f)
 

@@ -21,6 +21,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
   d "github.com/WeebDeveloperz/titsunofficial-server/database"
   n "github.com/WeebDeveloperz/titsunofficial-server/notes"
+  a "github.com/WeebDeveloperz/titsunofficial-server/auth"
   "github.com/gin-gonic/gin"
   "net/http"
 	"os"
@@ -29,6 +30,7 @@ import (
 func main() {
 	d.ConnectToDB()
 	n.Init() // shitty
+	a.Init() // shitty
 
   r := gin.New()
 
@@ -48,6 +50,7 @@ func main() {
 	})
 
 	n.Routes(r)
+	a.Routes(r)
 
   r.GET("/api/ping", func(ctx *gin.Context) {
     ctx.JSON(http.StatusOK, gin.H{"message": "pong"})
