@@ -27,7 +27,7 @@ import (
 )
 
 func Routes(route *gin.Engine) {
-	s := route.Group("/subjects")
+	s := route.Group("/api/subjects")
 	{
 		s.GET("/", func(ctx *gin.Context) {
 			var subjects []Subject
@@ -70,7 +70,7 @@ func Routes(route *gin.Engine) {
 			var files []File
 			db.Where("subject_id = ?", s.ID).Find(&files)
 
-			db.Delete(files)
+			db.Delete(&files)
 			log.Printf("Deleted all files for subject \"%s\" from DB: %v", s.SubjectCode, files)
 
 			// TODO: handle error
@@ -92,7 +92,7 @@ func Routes(route *gin.Engine) {
 		})
 	}
 
-	f := route.Group("/files")
+	f := route.Group("/api/files")
 	{
 		f.GET("/", func(ctx *gin.Context) {
 			var files []File
@@ -126,17 +126,6 @@ func Routes(route *gin.Engine) {
 			// TODO: handle error
 			res := db.Create(&f)
 			log.Printf("Saved new file to DB: %v", res)
-
-			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
-		})
-
-		f.PUT("/", func(ctx *gin.Context) {
-			var f File
-      json.Unmarshal([]byte(ctx.PostForm("data")), &f)
-
-			// TODO: handle error
-			res := db.Save(&f)
-			log.Printf("Updated file in DB: %v\n", res)
 
 			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 		})
