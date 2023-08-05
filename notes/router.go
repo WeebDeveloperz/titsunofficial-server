@@ -27,7 +27,7 @@ import (
 )
 
 func Routes(route *gin.Engine) {
-	s := route.Group("/subjects")
+	s := route.Group("/api/subjects")
 	{
 		s.GET("/", func(ctx *gin.Context) {
 			var subjects []Subject
@@ -92,7 +92,7 @@ func Routes(route *gin.Engine) {
 		})
 	}
 
-	f := route.Group("/files")
+	f := route.Group("/api/files")
 	{
 		f.GET("/", func(ctx *gin.Context) {
 			var files []File
