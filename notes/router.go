@@ -99,7 +99,7 @@ func Routes(route *gin.Engine) {
 			var files []File
 
 			// TODO: handle error
-			res := db.Find(&files)
+			res := db.Preload("Subject").Find(&files)
 			log.Printf("Read all files from DB: %v\n", res)
 
 			ctx.JSON(http.StatusOK, gin.H{"data": files})
