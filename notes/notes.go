@@ -46,3 +46,9 @@ type File struct {
 	SubjectID uint    `json:"subject_id"`
 	Subject   Subject `json:"subject"`
 }
+
+type Filter struct {
+	Semester    int    `json:"sem"`
+	Branch      string `json:"branch"`
+	SubjectCode string `json:"code"`
+}
