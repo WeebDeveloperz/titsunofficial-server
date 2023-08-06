@@ -18,13 +18,15 @@
 package notes
 
 import (
-  "github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"log"
 	"encoding/json"
-  "net/http"
+	"log"
+	"net/http"
 	"os"
+
 	"github.com/WeebDeveloperz/titsunofficial-server/auth"
+	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 func Routes(route *gin.Engine) {
@@ -33,8 +35,22 @@ func Routes(route *gin.Engine) {
 		s.GET("/", func(ctx *gin.Context) {
 			var subjects []Subject
 
+			branch := ctx.Query("branch")
+			semester := ctx.Query("semester")
+
+			// I wanna kill myself
+			var res *gorm.DB
 			// TODO: handle error
-			res := db.Find(&subjects)
+			if branch == "" && semester == "" {
+			  res = db.Find(&subjects)
+			} else if branch == "" && semester != "" {
+			  res = db.Where("semester = ?", semester).Find(&subjects)
+			} else if branch != "" && semester == "" {
+			  res = db.Where("branch = ?", branch).Find(&subjects)
+			} else {
+			  res = db.Where("branch = ? and semester = ?", branch, semester).Find(&subjects)
+			}
+
 			log.Printf("Read all subjects from DB: %v", res)
 
 			ctx.JSON(http.StatusOK, gin.H{"data": subjects})
@@ -97,12 +113,27 @@ func Routes(route *gin.Engine) {
 	{
 		f.GET("/", func(ctx *gin.Context) {
 			var files []File
+			subId := ctx.Query("sub_id")
 
+			// I wanna kill myself
+			var res *gorm.DB
 			// TODO: handle error
-			res := db.Preload("Subject").Find(&files)
+			if subId == ""  {
+			  res = db.Preload("Subject").Find(&files)
+			} else {
+			  res = db.Preload("Subject", "id = ?", subId).Find(&files)
+			}
+
 			log.Printf("Read all files from DB: %v\n", res)
 
-			ctx.JSON(http.StatusOK, gin.H{"data": files})
+			filesFiltered := []File{}
+			for _, i := range files {
+				if i.Subject.ID != 0 {
+					filesFiltered = append(filesFiltered, i)
+				}
+			}
+
+			ctx.JSON(http.StatusOK, gin.H{"data": filesFiltered})
 		})
 
 		f.POST("/", auth.Authorize(""), func(ctx *gin.Context) {
