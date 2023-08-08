@@ -15,43 +15,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package notes
+package other
 
 import (
-	"gorm.io/gorm"
-	"github.com/WeebDeveloperz/titsunofficial-server/database"
 	"os"
 )
 
 var dataDir string
-var db *gorm.DB
 func Init() {
-	db = database.DB
-	db.AutoMigrate(&Subject{}, &File{})
-	dataDir = os.Getenv("PUBLIC_DIR") + "notes/"
-}
-
-type Subject struct {
-	ID          uint   `json:"id"`
-	Semester    int    `json:"sem"`
-	Branch      string `json:"branch"`
-	SubjectCode string `json:"code"`
-	SubjectName string `json:"name"`
-	CreatedBy   string `json:"-"`
-	UpdatedBy   string `json:"-"`
-}
-
-type File struct {
-	ID        uint    `json:"id"`
-	FileName  string  `json:"name"`
-	FilePath  string  `json:"path"`
-	SubjectID uint    `json:"subject_id"`
-	Subject   Subject `json:"subject"`
-	CreatedBy string  `json:"-"`
-}
-
-type Filter struct {
-	Semester    int    `json:"sem"`
-	Branch      string `json:"branch"`
-	SubjectCode string `json:"code"`
+	dataDir = os.Getenv("PUBLIC_DIR")
 }
