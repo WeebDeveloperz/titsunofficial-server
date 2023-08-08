@@ -28,7 +28,7 @@ var db *gorm.DB
 func Init() {
 	db = database.DB
 	db.AutoMigrate(&Subject{}, &File{})
-	dataDir = os.Getenv("DATA_DIR")
+	dataDir = os.Getenv("DATA_DIR") + "/notes"
 }
 
 type Subject struct {
@@ -37,6 +37,8 @@ type Subject struct {
 	Branch      string `json:"branch"`
 	SubjectCode string `json:"code"`
 	SubjectName string `json:"name"`
+	CreatedBy   string `json:"-"`
+	UpdatedBy   string `json:"-"`
 }
 
 type File struct {
@@ -45,6 +47,7 @@ type File struct {
 	FilePath  string  `json:"path"`
 	SubjectID uint    `json:"subject_id"`
 	Subject   Subject `json:"subject"`
+	CreatedBy string  `json:"-"`
 }
 
 type Filter struct {

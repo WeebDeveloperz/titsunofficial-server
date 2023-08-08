@@ -23,16 +23,38 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func Authorize(role string) gin.HandlerFunc {
-  return func(c *gin.Context) {
-	  tk := c.PostForm("token")
+func getPriorityByRoleString(r string) int {
+	switch(r) {
+	case "write":
+		return 1
+	case "delete":
+		return 2
+	default:
+		return 0
+	}
+}
 
-		_, err := parseJWT(tk)
+func Authorize(role string) gin.HandlerFunc {
+  return func(ctx *gin.Context) {
+	  tk := ctx.PostForm("token")
+
+		claims, err := parseJWT(tk)
 		if err != nil {
-      c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "session expired"})
+      ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "session expired"})
       return
 		}
 
-    c.Next()
+		ctx.Set("username", claims.Username)
+		ctx.Set("role", claims.Role)
+
+		if claims.Role == "admin" {
+			ctx.Next()
+			return
+		}
+
+	  if getPriorityByRoleString(role) > getPriorityByRoleString(claims.Role) {
+      ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "you are not authorized to do this task"})
+			return
+	  }
   }
 }
