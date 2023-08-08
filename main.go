@@ -21,6 +21,7 @@ import (
 	_ "github.com/joho/godotenv/autoload"
   d "github.com/WeebDeveloperz/titsunofficial-server/database"
   n "github.com/WeebDeveloperz/titsunofficial-server/notes"
+  o "github.com/WeebDeveloperz/titsunofficial-server/other"
   a "github.com/WeebDeveloperz/titsunofficial-server/auth"
   "github.com/gin-gonic/gin"
   "net/http"
@@ -29,6 +30,7 @@ import (
 
 func main() {
 	d.ConnectToDB()
+	o.Init() // shitty
 	n.Init() // shitty
 	a.Init() // shitty
 
@@ -49,6 +51,7 @@ func main() {
     c.Next()
 	})
 
+	o.Routes(r)
 	n.Routes(r)
 	a.Routes(r)
 
