@@ -40,7 +40,6 @@ func Routes(route *gin.Engine) {
 
 			// I wanna kill myself
 			var res *gorm.DB
-			// TODO: handle error
 			if branch == "" && semester == "" {
 			  res = db.Find(&subjects)
 			} else if branch == "" && semester != "" {
@@ -51,48 +50,72 @@ func Routes(route *gin.Engine) {
 			  res = db.Where("branch = ? and semester = ?", branch, semester).Find(&subjects)
 			}
 
-			log.Printf("Read all subjects from DB: %v", res)
+			if res.Error != nil {
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+			  log.Printf("Unexpected error while reading subects from DB: %v\n", res.Error)
+				return
+			}
 
+			log.Printf("Read all subjects from DB.\n")
 			ctx.JSON(http.StatusOK, gin.H{"data": subjects})
 		})
 
-		s.POST("/", auth.Authorize(""), func(ctx *gin.Context) {
+		s.POST("/", auth.Authorize("write"), func(ctx *gin.Context) {
 			var s Subject
       json.Unmarshal([]byte(ctx.PostForm("data")), &s)
 			log.Println(ctx.PostForm("data"))
 
-			// TODO: handle error
+			username, _ := ctx.Get("username")
+			s.CreatedBy = username.(string)
+
 			res := db.Create(&s)
-			log.Printf("Saved new subject to DB: %v", res)
+			if res.Error != nil {
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+			  log.Printf("Unexpected error while saving new subect to DB: %v\n", res.Error)
+				return
+			}
 
+			log.Printf("Saved new subject to DB: %d\n", s.ID)
 			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 		})
 
-		s.PUT("/", auth.Authorize(""), func(ctx *gin.Context) {
+		s.PUT("/", auth.Authorize("write"), func(ctx *gin.Context) {
 			var s Subject
       json.Unmarshal([]byte(ctx.PostForm("data")), &s)
 
-			// TODO: handle error
+			username, _ := ctx.Get("username")
+			s.UpdatedBy = username.(string)
+
 			res := db.Save(&s)
-			log.Printf("Updated subject in DB: %v", res)
+			if res.Error != nil {
+				ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+			  log.Printf("Unexpected error while updating subect in DB: %v\n", res.Error)
+				return
+			}
 
+			log.Printf("Updated subject %d in DB\n", s.ID)
 			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 		})
 
-		s.DELETE("/", auth.Authorize(""), func(ctx *gin.Context) {
+		s.DELETE("/", auth.Authorize("delete"), func(ctx *gin.Context) {
 			var s Subject
       json.Unmarshal([]byte(ctx.PostForm("data")), &s)
 
-			// TODO: handle error
 			var files []File
 			db.Where("subject_id = ?", s.ID).Find(&files)
 
 			db.Delete(&files)
-			log.Printf("Deleted all files for subject \"%s\" from DB: %v", s.SubjectCode, files)
+			log.Printf("Deleted all files for subject \"%s\" from DB.\n", s.SubjectCode)
 
-			// TODO: handle error
 			res := db.Delete(&s)
-			log.Printf("Deleted subject from DB: %v", res)
+			if res.Error != nil {
+			  ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
+			  log.Printf("Failed to delete from DB: %d\n", s.ID)
+				return
+			}
+
+			username, _ := ctx.Get("username")
+			log.Printf("User \"%s\" Deleted subject from DB: %d\n", username, s.ID)
 
 			for _, f := range files {
 			  fp := dataDir + f.FilePath
@@ -103,8 +126,8 @@ func Routes(route *gin.Engine) {
 			    ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
 			  }
 			}
-			log.Printf("Deleted all files for subject \"%s\" from filesystem: %v", s.SubjectCode, files)
 
+			log.Printf("Deleted all files for subject \"%s\" from filesystem.\n", s.SubjectCode)
 			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 		})
 	}
@@ -117,14 +140,19 @@ func Routes(route *gin.Engine) {
 
 			// I wanna kill myself
 			var res *gorm.DB
-			// TODO: handle error
 			if subId == ""  {
 			  res = db.Preload("Subject").Find(&files)
 			} else {
 			  res = db.Preload("Subject", "id = ?", subId).Find(&files)
 			}
 
-			log.Printf("Read all files from DB: %v\n", res)
+			if res.Error != nil {
+  			ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+			  log.Printf("Error while reading all files from DB: %v\n", res.Error)
+				return
+			}
+
+			log.Printf("Read all files from DB.\n")
 
 			filesFiltered := []File{}
 			for _, i := range files {
@@ -136,7 +164,7 @@ func Routes(route *gin.Engine) {
 			ctx.JSON(http.StatusOK, gin.H{"data": filesFiltered})
 		})
 
-		f.POST("/", auth.Authorize(""), func(ctx *gin.Context) {
+		f.POST("/", auth.Authorize("write"), func(ctx *gin.Context) {
 			var f File
       json.Unmarshal([]byte(ctx.PostForm("data")), &f)
 
@@ -155,22 +183,35 @@ func Routes(route *gin.Engine) {
 			  ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
 			}
 
-			// TODO: handle error
+			username, _ := ctx.Get("username")
+			f.CreatedBy = username.(string)
+
 			res := db.Create(&f)
-			log.Printf("Saved new file to DB: %v", res)
+			if res.Error != nil {
+			  ctx.JSON(http.StatusInternalServerError, gin.H{"error": "internal server error"})
+				log.Printf("Error while adding new file to DB: %v\n", res.Error)
+				return
+			}
+			log.Printf("Saved new file to DB.")
 
 			ctx.JSON(http.StatusOK, gin.H{"message": "success"})
 		})
 
-		f.DELETE("/", auth.Authorize(""), func(ctx *gin.Context) {
+		f.DELETE("/", auth.Authorize("delete"), func(ctx *gin.Context) {
 			var f File
       json.Unmarshal([]byte(ctx.PostForm("data")), &f)
 
 			fp := dataDir + f.FilePath
 
-			// TODO: handle error
 			res := db.Delete(&f)
-			log.Printf("Deleted file from DB: %v\n", res)
+			if res.Error != nil {
+			  ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
+			  log.Printf("Failed to delete file from DB: %v\n", res.Error)
+				return
+			}
+
+			username, _ := ctx.Get("username")
+			log.Printf("User \"%s\" deleted file %d from DB\n", username, f.ID)
 
 			err := os.Remove(fp)
 			if err != nil {

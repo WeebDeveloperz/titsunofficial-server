@@ -20,8 +20,7 @@ type User struct {
 
 	Username string `json:"username"`
 	Password string `json:"password"`
-	Disabled bool   `json:"disabled"`
-	Role     string `json:"role"` // admin/peasant
+	Role     string `json:"role"` // none/write/delete/admin
 }
 
 type Claims struct {
@@ -41,10 +40,12 @@ func newJWT(username, role string) (string, error) {
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, claims).SignedString([]byte(secret))
 }
 
-func parseJWT(t string) (jwt.Claims, error) {
+func parseJWT(t string) (Claims, error) {
 	token, err := jwt.ParseWithClaims(t, &Claims{}, func (tk *jwt.Token) (interface{}, error) {
 		return []byte(secret), nil
 	})
 
-	return token.Claims, err
+	claims, _ := token.Claims.(*Claims)
+
+	return *claims, err
 }
