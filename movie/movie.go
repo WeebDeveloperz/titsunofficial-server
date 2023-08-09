@@ -15,44 +15,22 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package auth
+package movie
 
 import (
-	"net/http"
-
-	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"github.com/WeebDeveloperz/titsunofficial-server/database"
 )
 
-func getPriorityByRoleString(r string) int {
-	switch(r) {
-	case "read":
-		return 1
-	case "write":
-		return 2
-	case "delete":
-		return 3
-	default:
-		return 0
-	}
+var db *gorm.DB
+func Init() {
+	db = database.DB
+	db.AutoMigrate(&Movie{})
 }
 
-func Authorize(role string) gin.HandlerFunc {
-  return func(ctx *gin.Context) {
-	  tk := ctx.PostForm("token")
-
-		claims, err := parseJWT(tk)
-		if err != nil {
-      ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "session expired"})
-      return
-		}
-
-		ctx.Set("username", claims.Username)
-		ctx.Set("role", claims.Role)
-
-	  if getPriorityByRoleString(role) > getPriorityByRoleString(claims.Role) && claims.Role != "admin" {
-      ctx.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": "you are not authorized to do this task"})
-	  } else {
-      ctx.Next()
-    }
-  }
+type Movie struct {
+	ID        uint   `json:"ID"`
+	Title     string `json:"movie_title"`
+	Name      string `json:"submitter_name"`
+	CollegeID string `json:"submitter_college_id"`
 }
