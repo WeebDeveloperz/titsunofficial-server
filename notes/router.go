@@ -63,7 +63,21 @@ func Routes(route *gin.Engine) {
 		s.POST("/", auth.Authorize("write"), func(ctx *gin.Context) {
 			var s Subject
       json.Unmarshal([]byte(ctx.PostForm("data")), &s)
-			log.Println(ctx.PostForm("data"))
+
+			file, err := ctx.FormFile("file")
+			if err != nil {
+				// TODO: check what error it is
+				log.Printf("Error while getting FormFile: %v\n", err.Error())
+			  ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
+			}
+
+      s.ImagePath = uuid.New().String() + ".webp"
+      err = ctx.SaveUploadedFile(file, subImgDir + s.ImagePath)
+			if err != nil {
+				// TODO: check what error it is
+				log.Printf("Error while saving uploaded file: %v\n", err.Error())
+			  ctx.JSON(http.StatusInternalServerError, gin.H{"message": "internal server error"})
+			}
 
 			username, _ := ctx.Get("username")
 			s.CreatedBy = username.(string)
@@ -118,7 +132,7 @@ func Routes(route *gin.Engine) {
 			log.Printf("User \"%s\" Deleted subject from DB: %d\n", username, s.ID)
 
 			for _, f := range files {
-			  fp := dataDir + f.FilePath
+			  fp := notesDir + f.FilePath
 			  err := os.Remove(fp)
 			  if err != nil {
 			  	// TODO: check what error it is
@@ -176,7 +190,7 @@ func Routes(route *gin.Engine) {
 			}
 
       f.FilePath = uuid.New().String() + ".pdf"
-      err = ctx.SaveUploadedFile(file, dataDir + f.FilePath)
+      err = ctx.SaveUploadedFile(file, notesDir + f.FilePath)
 			if err != nil {
 				// TODO: check what error it is
 				log.Printf("Error while saving uploaded file: %v\n", err.Error())
@@ -201,7 +215,7 @@ func Routes(route *gin.Engine) {
 			var f File
       json.Unmarshal([]byte(ctx.PostForm("data")), &f)
 
-			fp := dataDir + f.FilePath
+			fp := notesDir + f.FilePath
 
 			res := db.Delete(&f)
 			if res.Error != nil {

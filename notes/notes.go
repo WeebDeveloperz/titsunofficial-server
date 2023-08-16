@@ -23,18 +23,21 @@ import (
 	"os"
 )
 
-var dataDir string
+var notesDir string
+var subImgDir string
 var db *gorm.DB
 func Init() {
 	db = database.DB
 	db.AutoMigrate(&Subject{}, &File{})
-	dataDir = os.Getenv("PUBLIC_DIR") + "notes/"
+	notesDir = os.Getenv("PUBLIC_DIR") + "notes/"
+	subImgDir = os.Getenv("PUBLIC_DIR") + "sub-img/"
 }
 
 type Subject struct {
 	ID          uint   `json:"id"`
 	Semester    int    `json:"sem"`
 	Branch      string `json:"branch"`
+	ImagePath   string  `json:"path"`
 	SubjectCode string `json:"code"`
 	SubjectName string `json:"name"`
 	CreatedBy   string `json:"-"`
